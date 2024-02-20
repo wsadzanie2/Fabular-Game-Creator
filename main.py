@@ -64,7 +64,7 @@ class Button:
         self.y = y
         self.func = func
         self.text = text
-        self.rect = pygame.Rect(x, y, 300, 50)
+        self.rect = pygame.Rect(x, y, 350, 50)
         self.font = font_object.render(self.text, False, (255, 255, 255))
         self.held = False
         self.visible = True
