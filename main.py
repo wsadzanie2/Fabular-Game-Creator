@@ -126,13 +126,13 @@ class InputText:
 
         pygame.draw.rect(screen, (0, 150, 255), rect_border(self.rect, -4))
         if self.text == '':
-            self.text_object = font_object.render("Wpisz nazwę pliku", False, (0, 20, 20))
+            self.text_object = font_object.render("Enter file name", False, (0, 20, 20))
         else:
             self.text_object = font_object.render(self.text, False, (0, 0, 0))
         screen.blit(self.text_object, self.text_object.get_rect(
             center=((self.rect.x + self.rect.width / 2), self.rect.y + (self.rect.height / 2))))
 
-    def start_the_story_game(self, _):
+    def start_the_story_game(self, _ = None):
         global story
         try:
             story = __import__(self.text).story
@@ -161,6 +161,7 @@ class InputText:
 
 
 text_input = InputText(100, 100)
+bg_color = (70, 70, 70)
 
 for i in range(5):
     Button(50, 250 + (i * 60), func=button_function)
@@ -169,7 +170,7 @@ while True:
 
     # load story loop
     while not run:
-        screen.fill((0, 255, 0))
+        screen.fill(bg_color)
         text_input.draw()
         for event in pygame.event.get():
             text_input.update(event)
@@ -181,8 +182,17 @@ while True:
     # story loop
     set_text()
     while run:
-        screen.fill((0, 255, 0))
-        screen.blit(font_object.render(text_at_the_top, False, (0, 0, 0)), (0, 0))
+        screen.fill(bg_color)
+        text_object_thingy = font_object.render(text_at_the_top, False, (0, 0, 0))
+        text_object_rect = text_object_thingy.get_rect()
+        text_object_rect.topleft = (10, 10)
+        pygame.draw.rect(screen, (80, 80, 80), rect_border(text_object_rect, 8))
+        pygame.draw.rect(screen, (90, 90, 90), rect_border(text_object_rect, 6))
+        pygame.draw.rect(screen, (100, 100, 100), rect_border(text_object_rect, 4))
+        pygame.draw.rect(screen, (110, 110, 110), rect_border(text_object_rect, 2))
+        pygame.draw.rect(screen, (120, 120, 120), text_object_rect)
+        screen.blit(text_object_thingy, text_object_rect.topleft)
+
         for button in button_list:
             button.draw()
         for event in pygame.event.get():
@@ -194,3 +204,5 @@ while True:
                 sys.exit()
 
         pygame.display.flip()
+
+    text_input.text = ''
