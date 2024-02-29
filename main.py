@@ -88,27 +88,32 @@ class Button:
         self.func = func
         self.text = text
         self.rect = pygame.Rect(x, y, 400, 50)
-        self.font = font_object.render(self.text, False, (255, 255, 255))
-        self.color_inactive = (0, 0, 200)
-        self.color_active = (0, 0, 255)
+        self.font = font_object.render(self.text, False, (0, 0, 0))
+        self.color_inactive = (0, 150, 200)
+        self.color_active = (0, 160, 255)
         self.held = False
         self.visible = True
+        self.extra_border = 0
 
     def draw(self):
         if not self.visible:
             return
-        pygame.draw.rect(screen, (0, 0, 0), self.rect)
-        if self.held:
-            pygame.draw.rect(screen, self.color_active, rect_border(self.rect, -4))
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            self.extra_border = 2
         else:
-            pygame.draw.rect(screen, self.color_inactive, rect_border(self.rect, -4))
+            self.extra_border = 0
+        pygame.draw.rect(screen, (0, 0, 0), rect_border(self.rect, self.extra_border))
+        if self.held:
+            pygame.draw.rect(screen, self.color_active, rect_border(self.rect, self.extra_border - 4))
+        else:
+            pygame.draw.rect(screen, self.color_inactive, rect_border(self.rect, self.extra_border - 4))
 
         screen.blit(self.font, self.font.get_rect(
             center=((self.rect.x + self.rect.width / 2), self.rect.y + (self.rect.height / 2))))
 
     def set_text(self, text):
         self.text = text
-        self.font = font_object.render(text, False, (255, 255, 255))
+        self.font = font_object.render(text, False, (0, 0, 0))
 
     def update(self, event):
         if not self.visible:
@@ -116,9 +121,10 @@ class Button:
         if event.type == MOUSEBUTTONDOWN:
             if self.rect.collidepoint(pygame.mouse.get_pos()):
                 self.held = True
-                return self.func(self)
         elif event.type == MOUSEBUTTONUP:
             self.held = False
+            if self.rect.collidepoint(pygame.mouse.get_pos()):
+                return self.func(self)
 
     def destroy(self):
         button_list.remove(self)
