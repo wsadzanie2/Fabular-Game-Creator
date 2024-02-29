@@ -41,7 +41,6 @@ def rect_gradient(in_color, out_color, rect, steps, width=1):
     dz = (in_color[2] - z) // steps
     for step in range(steps + 1):
         pygame.draw.rect(screen, (x, y, z), rect_border(rect, -step * width))
-        print(x, y, z)
         x += dx
         y += dy
         z += dz
@@ -141,8 +140,11 @@ class InputText:
         self.button.destroy()
         self.button.rect.width = 50
         self.button.rect.height = 50
-        self.button.color_active = (0, 0, 205)
-        self.button.color_inactive = (0, 0, 255)
+        self.button.color_active = (0, 255, 0)
+        self.button.color_inactive = (0, 200, 0)
+        self.error = ''
+        self.error_time = time.time()
+        self.error_color = (255, 0, 0)
         self.button.func = self.start_the_story_game
 
     def draw(self):
@@ -155,7 +157,13 @@ class InputText:
         pygame.draw.rect(screen, (0, 0, 0), self.rect)
 
         pygame.draw.rect(screen, (0, 150, 255), rect_border(self.rect, -4))
-        if self.text == '':
+        if self.error != '':
+            if self.error_time - time.time() > 0:
+                self.text_object = font_object.render(self.error, False, (0, 20, 20))
+            else:
+                self.error = ''
+                self.text = ''
+        elif self.text == '':
             self.text_object = font_object.render("Enter file name", False, (0, 20, 20))
         else:
             self.text_object = font_object.render(self.text, False, (0, 0, 0))
@@ -167,8 +175,15 @@ class InputText:
         try:
             story = __import__(self.text).story
         except Exception as e:
-            print("no story found or an error with a story")
-            print(e)
+            if type(e) is ValueError:
+                return
+            if type(e) is type(ModuleNotFoundError):
+                self.error_time = time.time() + 2
+                self.error = "Story not found"
+                return
+
+            self.error = "File is corrupted :|"
+            self.error_time = time.time() + 2
             return
         global run
         run = True
