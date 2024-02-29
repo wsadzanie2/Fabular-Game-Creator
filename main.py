@@ -1,7 +1,7 @@
 import time
-import pygame
 import sys
 import random
+import pygame
 from pygame.locals import *
 
 pygame.init()
@@ -20,6 +20,31 @@ text_at_the_top = ''
 def rect_border(rect, border_size):
     return pygame.Rect(rect.x - border_size, rect.y - border_size, rect.width + (2 * border_size),
                        rect.height + (2 * border_size))
+
+
+def add_colors(*args):
+    x, y, z = 0, 0, 0
+    for color in args:
+        x += color[0]
+        y += color[1]
+        z += color[2]
+    return min(x, 255), min(y, 255), min(z, 255)
+
+
+def rect_gradient(in_color, out_color, rect, steps, width=1):
+    rect = rect_border(rect, steps * width)
+    x = out_color[0]
+    y = out_color[1]
+    z = out_color[2]
+    dx = (in_color[0] - x) // steps
+    dy = (in_color[1] - y) // steps
+    dz = (in_color[2] - z) // steps
+    for step in range(steps + 1):
+        pygame.draw.rect(screen, (x, y, z), rect_border(rect, -step * width))
+        print(x, y, z)
+        x += dx
+        y += dy
+        z += dz
 
 
 def option_shuffler(story):
@@ -78,7 +103,6 @@ class Button:
         else:
             pygame.draw.rect(screen, self.color_inactive, rect_border(self.rect, -4))
 
-
         screen.blit(self.font, self.font.get_rect(
             center=((self.rect.x + self.rect.width / 2), self.rect.y + (self.rect.height / 2))))
 
@@ -132,7 +156,7 @@ class InputText:
         screen.blit(self.text_object, self.text_object.get_rect(
             center=((self.rect.x + self.rect.width / 2), self.rect.y + (self.rect.height / 2))))
 
-    def start_the_story_game(self, _ = None):
+    def start_the_story_game(self, _=None):
         global story
         try:
             story = __import__(self.text).story
@@ -186,11 +210,7 @@ while True:
         text_object_thingy = font_object.render(text_at_the_top, False, (0, 0, 0))
         text_object_rect = text_object_thingy.get_rect()
         text_object_rect.topleft = (10, 10)
-        pygame.draw.rect(screen, (80, 80, 80), rect_border(text_object_rect, 8))
-        pygame.draw.rect(screen, (90, 90, 90), rect_border(text_object_rect, 6))
-        pygame.draw.rect(screen, (100, 100, 100), rect_border(text_object_rect, 4))
-        pygame.draw.rect(screen, (110, 110, 110), rect_border(text_object_rect, 2))
-        pygame.draw.rect(screen, (120, 120, 120), text_object_rect)
+        rect_gradient((120, 120, 120), bg_color, text_object_rect, 5, 2)
         screen.blit(text_object_thingy, text_object_rect.topleft)
 
         for button in button_list:
