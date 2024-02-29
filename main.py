@@ -117,7 +117,7 @@ class InputText:
 
     def draw(self):
         # Update backspace
-        if self.del_bool and time.time() > self.del_time + .1:
+        if self.del_bool and time.time() > self.del_time + .2:
             self.del_time = time.time()
             self.text = self.text[:-1]
 
@@ -125,8 +125,10 @@ class InputText:
         pygame.draw.rect(screen, (0, 0, 0), self.rect)
 
         pygame.draw.rect(screen, (0, 150, 255), rect_border(self.rect, -4))
-
-        self.text_object = font_object.render(self.text, False, (0, 0, 0))
+        if self.text == '':
+            self.text_object = font_object.render("Wpisz nazwę pliku", False, (0, 20, 20))
+        else:
+            self.text_object = font_object.render(self.text, False, (0, 0, 0))
         screen.blit(self.text_object, self.text_object.get_rect(
             center=((self.rect.x + self.rect.width / 2), self.rect.y + (self.rect.height / 2))))
 
