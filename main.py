@@ -16,6 +16,31 @@ font_object = pygame.font.SysFont('your font', size=55)
 index = 0
 text_at_the_top = ''
 
+def render_text(text, color=(0, 0, 0), font=font_object, max_width=None):
+    if max_width is None:
+        max_width = screen.get_width()
+    words = text.split(' ')
+    lines = []
+    current_line = ''
+
+    for word in words:
+        test_line = current_line + ' ' + word if current_line else word
+        if font.size(test_line)[0] <= max_width:
+            current_line = test_line
+        else:
+            lines.append(current_line)
+            current_line = word
+
+    lines.append(current_line)
+
+    rendered_lines = []
+    y_offset = 0
+    for line in lines:
+        text_surface = font.render(line, True, color)
+        rendered_lines.append(text_surface)
+        y_offset += font.get_linesize()
+
+    return rendered_lines
 
 def rect_border(rect, border_size):
     return pygame.Rect(rect.x - border_size, rect.y - border_size, rect.width + (2 * border_size),
@@ -207,6 +232,7 @@ class InputText:
 
 text_input = InputText(100, 100)
 bg_color = (70, 70, 70)
+clock = pygame.time.Clock()
 
 for i in range(5):
     Button(50, 250 + (i * 60), func=button_function)
@@ -215,6 +241,7 @@ while True:
 
     # load story loop
     while not run:
+        dt = clock.tick(60)
         screen.fill(bg_color)
         text_input.draw()
         for event in pygame.event.get():
@@ -227,12 +254,19 @@ while True:
     # story loop
     set_text()
     while run:
+        dt = clock.tick(60)
         screen.fill(bg_color)
-        text_object_thingy = font_object.render(text_at_the_top, False, (0, 0, 0))
-        text_object_rect = text_object_thingy.get_rect()
-        text_object_rect.topleft = (10, 10)
-        rect_gradient((120, 120, 120), bg_color, text_object_rect, 5, 2)
-        screen.blit(text_object_thingy, text_object_rect.topleft)
+        text_object_thingy = render_text(text_at_the_top)
+
+
+        temp_rect = text_object_thingy[0].get_rect()
+        temp_rect.height = len(text_object_thingy) * font_object.get_height()
+        temp_rect.topleft = (10, 10)
+        rect_gradient((120, 120, 120), bg_color, temp_rect, 5, 2)
+
+        for line_number, line in enumerate(text_object_thingy):
+            screen.blit(line, (temp_rect.x, temp_rect.y + line_number * font_object.get_height()))
+
 
         for button in button_list:
             button.draw()
