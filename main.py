@@ -160,7 +160,8 @@ class Button:
 
 class InputText:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 350, 50)
+        self.width = 350
+        self.rect = pygame.Rect(x, y, self.width, 50)
         self.text = ''
         self.text_object = font_object.render(self.text, False, (0, 0, 0))
         self.del_bool = False
@@ -176,12 +177,16 @@ class InputText:
         self.error_color = (255, 0, 0)
         self.button.func = self.start_the_story_game
         self.default_text = "Enter file name"
+        self.selected = False
 
     def draw(self):
         # Update backspace
         if self.del_bool and time.time() > self.del_time + .2:
             self.del_time = time.time()
             self.text = self.text[:-1]
+        # Update other stuff
+        self.rect.width = max(self.width, self.text_object.get_width())
+
 
         self.button.draw()
         pygame.draw.rect(screen, (0, 0, 0), self.rect)
@@ -194,9 +199,12 @@ class InputText:
                 self.error = ''
                 self.text = ''
         elif self.text == '':
-            self.text_object = font_object.render(self.default_text, False, (0, 20, 20))
+            if self.selected:
+                self.text_object = font_object.render('|' if self.selected and round(time.time() * 1.8) % 2 == 0 else ' ', False, (0, 20, 20))
+            else:
+                self.text_object = font_object.render(self.default_text, False, (0, 20, 20))
         else:
-            self.text_object = font_object.render(self.text, False, (0, 0, 0))
+            self.text_object = font_object.render(self.text + ('|' if self.selected and round(time.time() * 1.8) % 2 == 0 else ' '), False, (0, 0, 0))
         screen.blit(self.text_object, self.text_object.get_rect(
             center=((self.rect.x + self.rect.width / 2), self.rect.y + (self.rect.height / 2))))
 
@@ -221,10 +229,15 @@ class InputText:
 
     def update(self, event: pygame.event):
         self.button.update(event)
+        if event.type == MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(pygame.mouse.get_pos()):
+                self.selected = True
+            else:
+                self.selected = False
         if event.type == KEYUP:
             if event.key == K_BACKSPACE:
                 self.del_bool = False
-        if event.type == KEYDOWN:
+        if event.type == KEYDOWN and self.selected:
             if event.key == K_BACKSPACE:
                 self.del_bool = True
                 self.text = self.text[:-1]
@@ -244,32 +257,31 @@ class Block:
         self.text_inputs.append(self.main_text_input)
         self.main_text_input.default_text = 'Main text here'
         self.main_text_input.rect.width = max(self.main_text_input.text_object.get_rect().width, 100)
-        for _ in range(6):
+        for x in range(6):
             self.text_inputs.append(InputText(x, y))
-            self.text_inputs[-1].default_text = ''
-            self.text_inputs[-1].rect.width = 50
+            self.text_inputs[-1].default_text = f'{x}'
+            self.text_inputs[-1].width = 50
             self.text_inputs[-1].button.visible = False
+
 
     def update_values(self):
         # update values
         self.main_text_input.button.rect.center = self.rect.center
         self.main_text_input.button.rect.x -= 150
         self.main_text_input.rect.midleft = self.main_text_input.button.rect.midright
-        self.main_text_input.rect.width = max(self.main_text_input.text_object.get_rect().width + 20, 100)
+        self.main_text_input.width = max(self.main_text_input.text_object.get_rect().width + 20, 100)
         self.main_text_input.button.rect.x += 2
         for index, text_input in enumerate(self.text_inputs):
-            pass
-            #TODO: Update the position of text inputs
+            if index != 0:
+                text_input.rect.midleft = self.text_inputs[index - 1].rect.midright
 
     def draw(self):
         self.update_values()
         # draw
+        pygame.draw.rect(screen, self.color, self.rect)
         for input_box in self.text_inputs:
             input_box.draw()
-        pygame.draw.rect(screen, self.color, self.rect)
-        self.main_text_input.draw()
     def update(self, event):
-        self.main_text_input.update(event)
         for input_box in self.text_inputs:
             input_box.update(event)
         if event.type == MOUSEBUTTONUP:
@@ -352,7 +364,11 @@ while True:
                 pygame.quit()
                 run = False
                 sys.exit()
+            elif event.type == pygame.VIDEORESIZE:
 
-        pygame.display.flip()
+                # Handle window resize
+                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+
+        pygame.display.update()
 
     text_input.text = ''
