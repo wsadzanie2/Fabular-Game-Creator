@@ -21,7 +21,7 @@ text_at_the_top = ''
 
 def render_text(text, color=(0, 0, 0), font=font_object, max_width=None):
     if max_width is None:
-        max_width = screen.get_width()
+        max_width = screen.get_width() - 20
     words = text.split(' ')
     lines = []
     current_line = ''
@@ -316,9 +316,12 @@ while True:
         text_object_thingy = render_text(text_at_the_top)
 
 
+
         temp_rect = text_object_thingy[0].get_rect()
         temp_rect.height = len(text_object_thingy) * font_object.get_height()
         temp_rect.topleft = (10, 10)
+        for rect in text_object_thingy:
+            temp_rect.width = max(temp_rect.width, rect.get_width())
         rect_gradient((120, 120, 120), bg_color, temp_rect, 5, 2)
 
         for line_number, line in enumerate(text_object_thingy):
