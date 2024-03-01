@@ -86,6 +86,7 @@ def button_function(self):
         index = story[index][1][self.index][1]
         if index == index_backup:
             print(f"Turning the program off at index {index}")
+            index = 0
             run = False
         try:
             set_text()
