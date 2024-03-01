@@ -234,6 +234,21 @@ text_input = InputText(100, 100)
 bg_color = (70, 70, 70)
 clock = pygame.time.Clock()
 
+editor_button = Button(50, 250)
+editor_button.destroy() # deletes it from the update list :)
+editor_button.set_text("Open Story Editor")
+
+def editor_loop(button):
+    return
+    while True:
+        screen.fill(bg_color)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+        pygame.display.flip()
+
+editor_button.func = editor_loop
 for i in range(5):
     Button(50, 250 + (i * 60), func=button_function)
 
@@ -244,8 +259,10 @@ while True:
         dt = clock.tick(60)
         screen.fill(bg_color)
         text_input.draw()
+        editor_button.draw()
         for event in pygame.event.get():
             text_input.update(event)
+            editor_button.update(event)
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
