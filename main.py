@@ -258,6 +258,7 @@ class Block:
         self.main_text_input.rect.width = max(self.main_text_input.text_object.get_rect().width + 20, 100)
         self.main_text_input.button.rect.x += 2
         for index, text_input in enumerate(self.text_inputs):
+            pass
             #TODO: Update the position of text inputs
 
     def draw(self):
