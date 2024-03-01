@@ -162,6 +162,7 @@ class InputText:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, 350, 50)
         self.text = ''
+        self.text_object = font_object.render(self.text, False, (0, 0, 0))
         self.del_bool = False
         self.del_time = time.time()
         self.button = Button(x - 48, y)
@@ -174,6 +175,7 @@ class InputText:
         self.error_time = time.time()
         self.error_color = (255, 0, 0)
         self.button.func = self.start_the_story_game
+        self.default_text = "Enter file name"
 
     def draw(self):
         # Update backspace
@@ -192,7 +194,7 @@ class InputText:
                 self.error = ''
                 self.text = ''
         elif self.text == '':
-            self.text_object = font_object.render("Enter file name", False, (0, 20, 20))
+            self.text_object = font_object.render(self.default_text, False, (0, 20, 20))
         else:
             self.text_object = font_object.render(self.text, False, (0, 0, 0))
         screen.blit(self.text_object, self.text_object.get_rect(
@@ -205,13 +207,13 @@ class InputText:
         except Exception as e:
             if type(e) is ValueError:
                 return
-            if type(e) is type(ModuleNotFoundError):
+            if type(e) is ModuleNotFoundError:
                 self.error_time = time.time() + 2
                 self.error = "Story not found"
                 return
-
-            self.error = "File is corrupted :|"
-            self.error_time = time.time() + 2
+            if self.error == '':
+                self.error = "File is corrupted :|"
+                self.error_time = time.time() + 2
             return
         global run
         run = True
@@ -234,12 +236,29 @@ class InputText:
 
 class Block:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 300, 50)
+        self.rect = pygame.Rect(x, y, 400, 70)
         self.color = (50, 50, 50)
         self.selected = False
+        self.text_inputs = []
+        self.main_text_input = InputText(x, y)
+        self.text_inputs.append(self.main_text_input)
+        self.main_text_input.default_text = 'Main text here'
+        self.main_text_input.rect.width = max(self.main_text_input.text_object.get_rect().width, 100)
     def draw(self):
+        # update values
+        self.main_text_input.button.rect.center = self.rect.center
+        self.main_text_input.button.rect.x -= 150
+        self.main_text_input.rect.midleft = self.main_text_input.button.rect.midright
+        self.main_text_input.rect.width = max(self.main_text_input.text_object.get_rect().width + 20, 100)
+        self.main_text_input.button.rect.x += 2
+
+        # draw
         pygame.draw.rect(screen, self.color, self.rect)
+        self.main_text_input.draw()
     def update(self, event):
+        self.main_text_input.update(event)
+        if event.type == MOUSEBUTTONUP:
+            self.selected = False
         if event.type == MOUSEBUTTONDOWN:
             if self.rect.collidepoint(pygame.mouse.get_pos()):
                 self.selected = True
@@ -255,7 +274,7 @@ clock = pygame.time.Clock()
 editor_button = Button(50, 250)
 editor_button.destroy() # deletes it from the update list :)
 editor_button.set_text("Open Story Editor")
-# editor_button.visible = False
+editor_button.visible = False
 
 def editor_loop(button):
     block = Block(150, 150)
