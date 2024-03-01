@@ -4,6 +4,8 @@ import random
 import pygame
 from pygame.locals import *
 
+selected_block = None
+
 pygame.init()
 
 pygame.display.set_caption("Fabular Game Creator")
@@ -230,6 +232,13 @@ class InputText:
             else:
                 self.text += event.unicode
 
+class Block:
+    def __init__(self, x, y):
+        self.rect = pygame.Rect(x, y, 300, 50)
+        self.color = (50, 50, 50)
+    def draw(self):
+        pygame.draw.rect(screen,self.color , self.rect)
+
 
 text_input = InputText(100, 100)
 bg_color = (70, 70, 70)
@@ -238,11 +247,13 @@ clock = pygame.time.Clock()
 editor_button = Button(50, 250)
 editor_button.destroy() # deletes it from the update list :)
 editor_button.set_text("Open Story Editor")
+editor_button.visible = False
 
 def editor_loop(button):
-    return
+    block = Block(150, 150)
     while True:
         screen.fill(bg_color)
+        block.draw()
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
