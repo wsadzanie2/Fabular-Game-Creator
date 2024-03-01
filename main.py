@@ -236,8 +236,16 @@ class Block:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, 300, 50)
         self.color = (50, 50, 50)
+        self.selected = False
     def draw(self):
-        pygame.draw.rect(screen,self.color , self.rect)
+        pygame.draw.rect(screen, self.color, self.rect)
+    def update(self, event):
+        if event.type == MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(pygame.mouse.get_pos()):
+                self.selected = True
+        if event.type == MOUSEMOTION:
+            if self.selected:
+                self.rect.center = pygame.mouse.get_pos()
 
 
 text_input = InputText(100, 100)
@@ -247,7 +255,7 @@ clock = pygame.time.Clock()
 editor_button = Button(50, 250)
 editor_button.destroy() # deletes it from the update list :)
 editor_button.set_text("Open Story Editor")
-editor_button.visible = False
+# editor_button.visible = False
 
 def editor_loop(button):
     block = Block(150, 150)
@@ -255,6 +263,7 @@ def editor_loop(button):
         screen.fill(bg_color)
         block.draw()
         for event in pygame.event.get():
+            block.update(event)
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
