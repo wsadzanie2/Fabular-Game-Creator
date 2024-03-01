@@ -6,6 +6,7 @@ from pygame.locals import *
 
 pygame.init()
 
+pygame.display.set_caption("Fabular Game Creator")
 screen = pygame.display.set_mode((1000, 1000), RESIZABLE)
 button_list = []
 story = []
