@@ -4,9 +4,10 @@ import random
 import pygame
 from pygame.locals import *
 
-selected_block = None
-
 pygame.init()
+selected_block = None
+rel_mouse_poz = pygame.mouse.get_rel()
+blocks_list = []
 
 pygame.display.set_caption("Fabular Game Creator")
 screen = pygame.display.set_mode((1000, 1000), RESIZABLE)
@@ -18,6 +19,7 @@ font_object = pygame.font.SysFont('your font', size=55)
 
 index = 0
 text_at_the_top = ''
+
 
 def render_text(text, color=(0, 0, 0), font=font_object, max_width=None):
     if max_width is None:
@@ -44,6 +46,7 @@ def render_text(text, color=(0, 0, 0), font=font_object, max_width=None):
         y_offset += font.get_linesize()
 
     return rendered_lines
+
 
 def rect_border(rect, border_size):
     return pygame.Rect(rect.x - border_size, rect.y - border_size, rect.width + (2 * border_size),
@@ -188,7 +191,6 @@ class InputText:
         # Update other stuff
         self.rect.width = max(self.width, self.text_object.get_width())
 
-
         self.button.draw()
         pygame.draw.rect(screen, (0, 0, 0), self.rect)
 
@@ -201,11 +203,13 @@ class InputText:
                 self.text = ''
         elif self.text == '':
             if self.selected:
-                self.text_object = font_object.render('|' if self.selected and round(time.time() * 1.8) % 2 == 0 else ' ', False, (0, 20, 20))
+                self.text_object = font_object.render(
+                    '|' if self.selected and round(time.time() * 1.8) % 2 == 0 else ' ', False, (0, 20, 20))
             else:
                 self.text_object = font_object.render(self.default_text, False, (0, 20, 20))
         else:
-            self.text_object = font_object.render(self.text + ('|' if self.selected and round(time.time() * 1.8) % 2 == 0 else ' '), False, (0, 0, 0))
+            self.text_object = font_object.render(
+                self.text + ('|' if self.selected and round(time.time() * 1.8) % 2 == 0 else ' '), False, (0, 0, 0))
         screen.blit(self.text_object, self.text_object.get_rect(
             center=((self.rect.x + self.rect.width / 2), self.rect.y + (self.rect.height / 2))))
 
@@ -248,9 +252,11 @@ class InputText:
             else:
                 self.text += event.unicode
 
+
 class Block:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 400, 70)
+        blocks_list.append(self)
+        self.rect = pygame.Rect(x, y, 700, 70)
         self.color = (50, 50, 50)
         self.selected = False
         self.text_inputs = []
@@ -258,23 +264,25 @@ class Block:
         self.text_inputs.append(self.main_text_input)
         self.main_text_input.default_text = 'Main text here'
         self.main_text_input.rect.width = max(self.main_text_input.text_object.get_rect().width, 100)
+        self.parent = None
+        self.child = None
         for x in range(6):
             self.text_inputs.append(InputText(x, y))
-            self.text_inputs[-1].default_text = f'{x}'
+            self.text_inputs[-1].default_text = ''
             self.text_inputs[-1].width = 50
             self.text_inputs[-1].button.visible = False
-
 
     def update_values(self):
         # update values
         self.main_text_input.button.rect.center = self.rect.center
-        self.main_text_input.button.rect.x -= 150
+        self.main_text_input.button.rect.x -= 300
         self.main_text_input.rect.midleft = self.main_text_input.button.rect.midright
         self.main_text_input.width = max(self.main_text_input.text_object.get_rect().width + 20, 100)
         self.main_text_input.button.rect.x += 2
         for index, text_input in enumerate(self.text_inputs):
             if index != 0:
                 text_input.rect.midleft = self.text_inputs[index - 1].rect.midright
+                text_input.rect.x -= 4
 
     def draw(self):
         self.update_values()
@@ -282,17 +290,28 @@ class Block:
         pygame.draw.rect(screen, self.color, self.rect)
         for input_box in self.text_inputs:
             input_box.draw()
+
     def update(self, event):
+        global selected_block, rel_mouse_poz
         for input_box in self.text_inputs:
             input_box.update(event)
         if event.type == MOUSEBUTTONUP:
             self.selected = False
+            if selected_block == self:
+                selected_block = None
         if event.type == MOUSEBUTTONDOWN:
             if self.rect.collidepoint(pygame.mouse.get_pos()):
                 self.selected = True
+                selected_block = self
         if event.type == MOUSEMOTION:
             if self.selected:
-                self.rect.center = pygame.mouse.get_pos()
+                rel_mouse_poz = pygame.mouse.get_rel()
+                self.rect.x += rel_mouse_poz[0]
+                self.rect.y += rel_mouse_poz[1]
+            elif selected_block is not None:
+                if self.rect.collidepoint(pygame.mouse.get_pos()):
+                    self.child = selected_block
+                    selected_block.parent = self
 
 
 text_input = InputText(100, 100)
@@ -300,21 +319,30 @@ bg_color = (70, 70, 70)
 clock = pygame.time.Clock()
 
 editor_button = Button(50, 250)
-editor_button.destroy() # deletes it from the update list :)
+editor_button.destroy()  # deletes it from the update list :)
 editor_button.set_text("Open Story Editor")
+
+
 editor_button.visible = False
 
 def editor_loop(button):
-    block = Block(150, 150)
+    global rel_mouse_poz
+    for i in range(10):
+        Block(150, 150 + (80 * i))
     while True:
         screen.fill(bg_color)
-        block.draw()
+        for block in blocks_list:
+            block.draw()
+
         for event in pygame.event.get():
-            block.update(event)
+            for block in blocks_list:
+                block.update(event)
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
+        rel_mouse_poz = pygame.mouse.get_rel()
         pygame.display.flip()
+
 
 editor_button.func = editor_loop
 for i in range(5):
@@ -343,8 +371,6 @@ while True:
         screen.fill(bg_color)
         text_object_thingy = render_text(text_at_the_top)
 
-
-
         temp_rect = text_object_thingy[0].get_rect()
         temp_rect.height = len(text_object_thingy) * font_object.get_height()
         temp_rect.topleft = (10, 10)
@@ -354,7 +380,6 @@ while True:
 
         for line_number, line in enumerate(text_object_thingy):
             screen.blit(line, (temp_rect.x, temp_rect.y + line_number * font_object.get_height()))
-
 
         for button in button_list:
             button.draw()
