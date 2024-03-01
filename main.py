@@ -244,19 +244,33 @@ class Block:
         self.text_inputs.append(self.main_text_input)
         self.main_text_input.default_text = 'Main text here'
         self.main_text_input.rect.width = max(self.main_text_input.text_object.get_rect().width, 100)
-    def draw(self):
+        for _ in range(6):
+            self.text_inputs.append(InputText(x, y))
+            self.text_inputs[-1].default_text = ''
+            self.text_inputs[-1].rect.width = 50
+            self.text_inputs[-1].button.visible = False
+
+    def update_values(self):
         # update values
         self.main_text_input.button.rect.center = self.rect.center
         self.main_text_input.button.rect.x -= 150
         self.main_text_input.rect.midleft = self.main_text_input.button.rect.midright
         self.main_text_input.rect.width = max(self.main_text_input.text_object.get_rect().width + 20, 100)
         self.main_text_input.button.rect.x += 2
+        for index, text_input in enumerate(self.text_inputs):
+            #TODO: Update the position of text inputs
 
+    def draw(self):
+        self.update_values()
         # draw
+        for input_box in self.text_inputs:
+            input_box.draw()
         pygame.draw.rect(screen, self.color, self.rect)
         self.main_text_input.draw()
     def update(self, event):
         self.main_text_input.update(event)
+        for input_box in self.text_inputs:
+            input_box.update(event)
         if event.type == MOUSEBUTTONUP:
             self.selected = False
         if event.type == MOUSEBUTTONDOWN:
