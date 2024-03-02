@@ -328,13 +328,14 @@ text_input = InputText(100, 100)
 bg_color = (70, 70, 70)
 clock = pygame.time.Clock()
 
-
+# Define the editor button (it opens a story editor)
 editor_button = Button(50, 250)
 editor_button.destroy()  # deletes it from the update list :)
 editor_button.set_text("Open Story Editor")
+# Define the font selector
 font_selector = InputText(100, 100)
-
 font_selector.default_text = 'Font'
+settings_things.append(font_selector)
 
 
 def select_font(button: Button):
@@ -345,10 +346,23 @@ def select_font(button: Button):
     font_object = pygame.font.SysFont(input_box.text, size=55)
 
 
-
 font_selector.run_function = select_font
-settings_things.append(font_selector)
+# Define the bg_color selector
+bg_color_selector = InputText(100, 170)
+bg_color_selector.default_text = 'Background_color (RGB)'
+settings_things.append(bg_color_selector)
 
+def select_bg_color(button):
+    global bg_color
+    if button.parent is None:
+        return
+    input_box: InputText = button.parent
+    bg_color = tuple(int(input_box.text.split(',')[index]) for index in range(3))
+
+bg_color_selector.run_function = select_bg_color
+
+
+# Hide the unsupported editor_button
 editor_button.visible = False
 def editor_loop(button):
     global rel_mouse_poz
