@@ -8,6 +8,8 @@ pygame.init()
 selected_block = None
 rel_mouse_poz = pygame.mouse.get_rel()
 blocks_list = []
+settings_things = []
+running = True
 
 pygame.display.set_caption("Fabular Game Creator")
 screen = pygame.display.set_mode((1000, 1000), RESIZABLE)
@@ -116,6 +118,7 @@ class Button:
         button_list.append(self)
         self.x = x
         self.y = y
+        self.parent = None
         self.func = func
         self.text = text
         self.rect = pygame.Rect(x, y, 400, 50)
@@ -171,6 +174,7 @@ class InputText:
         self.del_bool = False
         self.del_time = time.time()
         self.button = Button(x - 48, y)
+        self.button.parent = self
         self.button.destroy()
         self.button.rect.width = 50
         self.button.rect.height = 50
@@ -179,7 +183,7 @@ class InputText:
         self.error = ''
         self.error_time = time.time()
         self.error_color = (255, 0, 0)
-        self.button.func = self.start_the_story_game
+        self.button.func = self.run_function
         self.default_text = "Enter file name"
         self.selected = False
 
@@ -213,7 +217,7 @@ class InputText:
         screen.blit(self.text_object, self.text_object.get_rect(
             center=((self.rect.x + self.rect.width / 2), self.rect.y + (self.rect.height / 2))))
 
-    def start_the_story_game(self, _=None):
+    def run_function(self, _):
         global story
         try:
             story = __import__(self.text).story
@@ -230,7 +234,7 @@ class InputText:
             return
         global run
         run = True
-        return
+        return self.text
 
     def update(self, event: pygame.event):
         self.button.update(event)
@@ -248,7 +252,7 @@ class InputText:
                 self.text = self.text[:-1]
                 self.del_time = time.time()
             elif event.key == K_RETURN:
-                return self.start_the_story_game()
+                return self.run_function(self.button)
             else:
                 self.text += event.unicode
 
@@ -283,6 +287,12 @@ class Block:
             if index != 0:
                 text_input.rect.midleft = self.text_inputs[index - 1].rect.midright
                 text_input.rect.x -= 4
+        if self.parent is not None:
+            if self.parent.rect.collidepoint(pygame.mouse.get_pos()):
+                self.rect.midtop = self.parent.rect.midbottom
+            elif self.selected:
+                self.parent.child = None
+                self.parent = None
 
     def draw(self):
         self.update_values()
@@ -318,13 +328,28 @@ text_input = InputText(100, 100)
 bg_color = (70, 70, 70)
 clock = pygame.time.Clock()
 
+
 editor_button = Button(50, 250)
 editor_button.destroy()  # deletes it from the update list :)
 editor_button.set_text("Open Story Editor")
+font_selector = InputText(100, 100)
 
+font_selector.default_text = 'Font'
+
+
+def select_font(button: Button):
+    global font_object
+    if button.parent is None:
+        return
+    input_box: InputText = button.parent
+    font_object = pygame.font.SysFont(input_box.text, size=55)
+
+
+
+font_selector.run_function = select_font
+settings_things.append(font_selector)
 
 editor_button.visible = False
-
 def editor_loop(button):
     global rel_mouse_poz
     for i in range(10):
@@ -333,7 +358,6 @@ def editor_loop(button):
         screen.fill(bg_color)
         for block in blocks_list:
             block.draw()
-
         for event in pygame.event.get():
             for block in blocks_list:
                 block.update(event)
@@ -345,6 +369,39 @@ def editor_loop(button):
 
 
 editor_button.func = editor_loop
+
+settings_button = Button(2, 2)
+settings_button.destroy()  # removes it from the list
+settings_things.append(settings_button)
+settings_button.rect.width = 170
+settings_button.set_text('Settings')
+
+
+def settings_loop(button):
+    global running
+    running = True
+    button.set_text('Back')
+    def exit_settings(button):
+        global running
+        button.func = settings_loop
+        button.set_text('Settings')
+        running = False
+    button.func = exit_settings
+    while running:
+        screen.fill(bg_color)
+        for thing in settings_things:
+            thing.draw()
+        for event in pygame.event.get():
+            for thing in settings_things:
+                thing.update(event)
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+        pygame.display.flip()
+
+
+settings_button.func = settings_loop
+
 for i in range(5):
     Button(50, 250 + (i * 60), func=button_function)
 
@@ -356,9 +413,11 @@ while True:
         screen.fill(bg_color)
         text_input.draw()
         editor_button.draw()
+        settings_button.draw()
         for event in pygame.event.get():
             text_input.update(event)
             editor_button.update(event)
+            settings_button.update(event)
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
