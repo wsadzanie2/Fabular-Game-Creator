@@ -333,6 +333,10 @@ class Block:
 
             elif selected_block is not None:
                 if self.rect.collidepoint(pygame.mouse.get_pos()):
+                    if self.child:
+                        self.child.parent = None
+                    if self.parent:
+                        self.parent.child = None
                     self.child = selected_block
                     selected_block.parent = self
 
@@ -379,7 +383,7 @@ bg_color_selector.button.func = select_bg_color
 
 
 # Hide the unsupported editor_button
-# editor_button.visible = False
+editor_button.visible = False
 def editor_loop(button):
     global rel_mouse_poz
     for i in range(10):
