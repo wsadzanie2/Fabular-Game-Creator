@@ -282,15 +282,19 @@ class Block:
 
     def update_values(self):
         # update values
-        self.main_text_input.button.rect.center = self.rect.center
-        self.main_text_input.button.rect.x -= 300
-        self.main_text_input.rect.midleft = self.main_text_input.button.rect.midright
-        self.main_text_input.width = max(self.main_text_input.text_object.get_rect().width + 20, 100)
+        current_width = 60
+        self.main_text_input.rect.midleft = self.rect.midleft
+        self.main_text_input.rect.x += 60
+        self.main_text_input.width = 300
+        self.main_text_input.button.rect.midright = self.main_text_input.rect.midleft
         self.main_text_input.button.rect.x += 2
         for index, text_input in enumerate(self.text_inputs):
+            current_width += text_input.rect.width
             if index != 0:
                 text_input.rect.midleft = self.text_inputs[index - 1].rect.midright
                 text_input.rect.x -= 4
+        self.rect.width = current_width
+
         if self.child:
             self.update_child_position()
         if self.parent is not None:
@@ -305,12 +309,12 @@ class Block:
         self.update_values()
         # draw
         pygame.draw.rect(screen, self.color, self.rect)
-        for input_box in self.text_inputs:
+        for input_box in reversed(self.text_inputs):
             input_box.draw()
 
     def update(self, event):
         global selected_block, rel_mouse_poz
-        for input_box in self.text_inputs:
+        for input_box in reversed(self.text_inputs):
             input_box.update(event)
         if event.type == MOUSEBUTTONUP:
             self.selected = False
@@ -323,9 +327,9 @@ class Block:
         if event.type == MOUSEMOTION:
             if self.selected:
                 rel_mouse_poz = pygame.mouse.get_rel()
-                if self.rect.collidepoint(pygame.mouse.get_pos()):
-                    self.rect.x += rel_mouse_poz[0]
-                    self.rect.y += rel_mouse_poz[1]
+
+                self.rect.x += rel_mouse_poz[0]
+                self.rect.y += rel_mouse_poz[1]
 
             elif selected_block is not None:
                 if self.rect.collidepoint(pygame.mouse.get_pos()):
@@ -375,7 +379,7 @@ bg_color_selector.button.func = select_bg_color
 
 
 # Hide the unsupported editor_button
-editor_button.visible = False
+# editor_button.visible = False
 def editor_loop(button):
     global rel_mouse_poz
     for i in range(10):
