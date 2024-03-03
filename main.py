@@ -275,6 +275,10 @@ class Block:
             self.text_inputs[-1].default_text = ''
             self.text_inputs[-1].width = 50
             self.text_inputs[-1].button.visible = False
+    def update_child_position(self):
+        if self.child is not None:
+            self.child.rect.midtop = self.rect.midbottom
+            self.child.update_child_position()
 
     def update_values(self):
         # update values
@@ -287,12 +291,15 @@ class Block:
             if index != 0:
                 text_input.rect.midleft = self.text_inputs[index - 1].rect.midright
                 text_input.rect.x -= 4
+        if self.child:
+            self.update_child_position()
         if self.parent is not None:
             if self.parent.rect.collidepoint(pygame.mouse.get_pos()):
                 self.rect.midtop = self.parent.rect.midbottom
             elif self.selected:
                 self.parent.child = None
                 self.parent = None
+
 
     def draw(self):
         self.update_values()
@@ -316,8 +323,10 @@ class Block:
         if event.type == MOUSEMOTION:
             if self.selected:
                 rel_mouse_poz = pygame.mouse.get_rel()
-                self.rect.x += rel_mouse_poz[0]
-                self.rect.y += rel_mouse_poz[1]
+                if self.rect.collidepoint(pygame.mouse.get_pos()):
+                    self.rect.x += rel_mouse_poz[0]
+                    self.rect.y += rel_mouse_poz[1]
+
             elif selected_block is not None:
                 if self.rect.collidepoint(pygame.mouse.get_pos()):
                     self.child = selected_block
@@ -347,9 +356,11 @@ def select_font(button: Button):
 
 
 font_selector.run_function = select_font
+font_selector.button.func = select_font
 # Define the bg_color selector
 bg_color_selector = InputText(100, 170)
-bg_color_selector.default_text = 'Background_color (RGB)'
+bg_color_selector.width = 500
+bg_color_selector.default_text = 'Background color (RGB)'
 settings_things.append(bg_color_selector)
 
 def select_bg_color(button):
@@ -360,6 +371,7 @@ def select_bg_color(button):
     bg_color = tuple(int(input_box.text.split(',')[index]) for index in range(3))
 
 bg_color_selector.run_function = select_bg_color
+bg_color_selector.button.func = select_bg_color
 
 
 # Hide the unsupported editor_button
