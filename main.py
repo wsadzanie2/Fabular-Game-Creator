@@ -234,6 +234,7 @@ class InputText:
             return
         global run
         run = True
+        self.selected = False
         return self.text
 
     def update(self, event: pygame.event):
@@ -276,6 +277,7 @@ class Block:
             self.text_inputs[-1].default_text = ''
             self.text_inputs[-1].width = 50
             self.text_inputs[-1].button.visible = False
+
     def update_child_position(self):
         if self.child is not None:
             self.child.draw_rect.midtop = self.draw_rect.midbottom
@@ -306,7 +308,6 @@ class Block:
             elif self.selected:
                 self.parent.child = None
                 self.parent = None
-
 
     def draw(self):
         self.update_values()
@@ -375,6 +376,7 @@ bg_color_selector.width = 500
 bg_color_selector.default_text = 'Background color (RGB)'
 settings_things.append(bg_color_selector)
 
+
 def select_bg_color(button):
     global bg_color
     if button.parent is None:
@@ -382,12 +384,14 @@ def select_bg_color(button):
     input_box: InputText = button.parent
     bg_color = tuple(int(input_box.text.split(',')[index]) for index in range(3))
 
+
 bg_color_selector.run_function = select_bg_color
+
 bg_color_selector.button.func = select_bg_color
 
 
 # Hide the unsupported editor_button
-editor_button.visible = False
+# editor_button.visible = False
 def editor_loop(button):
     global rel_mouse_poz
     for i in range(10):
@@ -419,11 +423,13 @@ def settings_loop(button):
     global running
     running = True
     button.set_text('Back')
+
     def exit_settings(button):
         global running
         button.func = settings_loop
         button.set_text('Settings')
         running = False
+
     button.func = exit_settings
     while running:
         screen.fill(bg_color)
