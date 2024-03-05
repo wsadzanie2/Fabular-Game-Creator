@@ -261,6 +261,7 @@ class Block:
     def __init__(self, x, y):
         blocks_list.append(self)
         self.rect = pygame.Rect(x, y, 700, 70)
+        self.draw_rect = self.rect.copy()
         self.color = (50, 50, 50)
         self.selected = False
         self.text_inputs = []
@@ -277,13 +278,13 @@ class Block:
             self.text_inputs[-1].button.visible = False
     def update_child_position(self):
         if self.child is not None:
-            self.child.rect.midtop = self.rect.midbottom
+            self.child.draw_rect.midtop = self.draw_rect.midbottom
             self.child.update_child_position()
 
     def update_values(self):
         # update values
         current_width = 60
-        self.main_text_input.rect.midleft = self.rect.midleft
+        self.main_text_input.rect.midleft = self.draw_rect.midleft
         self.main_text_input.rect.x += 60
         self.main_text_input.width = 300
         self.main_text_input.button.rect.midright = self.main_text_input.rect.midleft
@@ -294,12 +295,13 @@ class Block:
                 text_input.rect.midleft = self.text_inputs[index - 1].rect.midright
                 text_input.rect.x -= 4
         self.rect.width = current_width
+        self.draw_rect = self.rect.copy()
 
         if self.child:
             self.update_child_position()
         if self.parent is not None:
             if self.parent.rect.collidepoint(pygame.mouse.get_pos()):
-                self.rect.midtop = self.parent.rect.midbottom
+                self.draw_rect.midtop = self.parent.rect.midbottom
             elif self.selected:
                 self.parent.child = None
                 self.parent = None
@@ -308,7 +310,7 @@ class Block:
     def draw(self):
         self.update_values()
         # draw
-        pygame.draw.rect(screen, self.color, self.rect)
+        pygame.draw.rect(screen, self.color, self.draw_rect)
         for input_box in reversed(self.text_inputs):
             input_box.draw()
 
