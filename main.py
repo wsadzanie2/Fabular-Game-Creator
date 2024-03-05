@@ -279,6 +279,7 @@ class Block:
     def update_child_position(self):
         if self.child is not None:
             self.child.draw_rect.midtop = self.draw_rect.midbottom
+            self.child.rect.midtop = self.draw_rect.midbottom
             self.child.update_child_position()
 
     def update_values(self):
@@ -297,9 +298,9 @@ class Block:
         self.rect.width = current_width
         self.draw_rect = self.rect.copy()
 
-        if self.child:
-            self.update_child_position()
+        self.update_child_position()
         if self.parent is not None:
+            self.rect.midtop = self.parent.rect.midbottom
             if self.parent.rect.collidepoint(pygame.mouse.get_pos()):
                 self.draw_rect.midtop = self.parent.rect.midbottom
             elif self.selected:
@@ -322,6 +323,7 @@ class Block:
             self.selected = False
             if selected_block == self:
                 selected_block = None
+            self.rect = self.draw_rect.copy()
         if event.type == MOUSEBUTTONDOWN:
             if self.rect.collidepoint(pygame.mouse.get_pos()):
                 self.selected = True
