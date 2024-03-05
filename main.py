@@ -342,6 +342,7 @@ class Block:
                         self.child.parent = None
                     if self.parent:
                         self.parent.child = None
+                    # if selected_block.parent:
                     self.child = selected_block
                     selected_block.parent = self
 
@@ -377,6 +378,13 @@ bg_color_selector.default_text = 'Background color (RGB)'
 settings_things.append(bg_color_selector)
 
 
+def exit_settings(button):
+    global running
+    button.func = settings_loop
+    button.set_text('Settings')
+    running = False
+
+
 def select_bg_color(button):
     global bg_color
     if button.parent is None:
@@ -389,20 +397,37 @@ bg_color_selector.run_function = select_bg_color
 
 bg_color_selector.button.func = select_bg_color
 
+exit_editor_button = Button(5, 5)
+exit_editor_button.destroy()
+exit_editor_button.rect.width = 50
+exit_editor_button.rect.height = 50
+exit_editor_button.set_text('X')
+
+
+def exit_small_menus(_):
+    global running
+    running = False
+
+
+exit_editor_button.func = exit_small_menus
+
 
 # Hide the unsupported editor_button
-# editor_button.visible = False
+editor_button.visible = False
 def editor_loop(button):
-    global rel_mouse_poz
+    global rel_mouse_poz, running
+    running = True
     for i in range(10):
         Block(150, 150 + (80 * i))
-    while True:
+    while running:
         screen.fill(bg_color)
         for block in blocks_list:
             block.draw()
+        exit_editor_button.draw()
         for event in pygame.event.get():
             for block in blocks_list:
                 block.update(event)
+            exit_editor_button.update(event)
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -423,12 +448,6 @@ def settings_loop(button):
     global running
     running = True
     button.set_text('Back')
-
-    def exit_settings(button):
-        global running
-        button.func = settings_loop
-        button.set_text('Settings')
-        running = False
 
     button.func = exit_settings
     while running:
