@@ -221,6 +221,10 @@ class InputText:
         if self.text == ":ADMIN":
             global editor_button
             editor_button.visible = True
+            self.text = ''
+            self.error = "Good luck admin!"
+            self.error_time = time.time() + 2
+            self.selected = False
             return
         global story
         try:
@@ -415,14 +419,14 @@ def exit_small_menus(_):
 
 exit_editor_button.func = exit_small_menus
 
+for i in range(10):
+    Block(150, 150 + (80 * i))
 
 # Hide the unsupported editor_button
 editor_button.visible = False
 def editor_loop(button):
     global rel_mouse_poz, running
     running = True
-    for i in range(10):
-        Block(150, 150 + (80 * i))
     while running:
         screen.fill(bg_color)
         for block in blocks_list:
