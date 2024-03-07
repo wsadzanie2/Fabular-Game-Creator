@@ -218,6 +218,10 @@ class InputText:
             center=((self.rect.x + self.rect.width / 2), self.rect.y + (self.rect.height / 2))))
 
     def run_function(self, _):
+        if self.text == ":ADMIN":
+            global editor_button
+            editor_button.visible = True
+            return
         global story
         try:
             story = __import__(self.text).story
