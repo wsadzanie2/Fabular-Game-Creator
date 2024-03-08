@@ -288,8 +288,8 @@ class Block:
 
     def update_child_position(self):
         if self.child is not None:
-            self.child.draw_rect.midtop = self.draw_rect.midbottom
-            self.child.rect.midtop = self.draw_rect.midbottom
+            self.child.draw_rect.midtop = self.rect.midbottom
+            self.child.rect.midtop = self.rect.midbottom
             self.child.update_child_position()
 
     def update_values(self):
@@ -316,6 +316,7 @@ class Block:
             elif self.selected:
                 self.parent.child = None
                 self.parent = None
+        self.update_child_position()
 
     def draw(self):
         self.update_values()
