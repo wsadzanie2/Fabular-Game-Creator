@@ -412,6 +412,15 @@ exit_editor_button.rect.width = 50
 exit_editor_button.rect.height = 50
 exit_editor_button.set_text('X')
 
+add_block_button = Button(5, 55)
+add_block_button.destroy()
+add_block_button.rect.width = 50
+add_block_button.rect.height = 50
+add_block_button.set_text('+')
+
+def add_block(_):
+    Block(100, 0)
+add_block_button.func = add_block
 
 def exit_small_menus(_):
     global running
@@ -419,9 +428,6 @@ def exit_small_menus(_):
 
 
 exit_editor_button.func = exit_small_menus
-
-for i in range(10):
-    Block(150, 150 + (80 * i))
 
 # Hide the unsupported editor_button
 editor_button.visible = False
@@ -433,10 +439,12 @@ def editor_loop(button):
         for block in blocks_list:
             block.draw()
         exit_editor_button.draw()
+        add_block_button.draw()
         for event in pygame.event.get():
             for block in blocks_list:
                 block.update(event)
             exit_editor_button.update(event)
+            add_block_button.update(event)
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
