@@ -418,8 +418,25 @@ add_block_button.rect.width = 50
 add_block_button.rect.height = 50
 add_block_button.set_text('+')
 
+def find_the_best_space_and_possible_parent(y=0):
+    for block in blocks_list:
+        if block.rect.colliderect(pygame.Rect(100, y, 100, 70)):
+            return_value = find_the_best_space_and_possible_parent(y + 70)
+            if return_value[1] is not None:
+                return return_value
+            return return_value[0], block
+    return y, None
+
 def add_block(_):
-    Block(100, 0)
+    x = 100
+    y, block = find_the_best_space_and_possible_parent()
+    if block is not None:
+        new_block = Block(x, y)
+        block.child = new_block
+        new_block.parent = block
+    else:
+        Block(x, y)
+
 add_block_button.func = add_block
 
 def exit_small_menus(_):
